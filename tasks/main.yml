@@ -1,0 +1,39 @@
+---
+- name: install AWS credentials
+  template:
+    src: templates/credentials.j2
+    dest: "{{ install_dir }}/credentials"
+    mode: 0600
+    owner: "{{ dev_user }}"
+    group: "{{ dev_user }}"
+
+- name: install dynamic inventory script
+  copy:
+    src: files/ec2.py
+    dest: "{{ install_dir }}/ec2.py"
+    mode: 0755
+    owner: "{{ dev_user }}"
+    group: "{{ dev_user }}"
+
+- name: install inventory file
+  copy:
+    src: files/ec2.ini
+    dest: "{{ install_dir }}/ec2.ini"
+    mode: 0644
+    owner: "{{ dev_user }}"
+    group: "{{ dev_user }}"
+
+- name: init shell variables
+  lineinfile:
+    path: "/home/{{ dev_user }}/.bashrc"
+    state: present
+    line: "{{ item }}"
+    regexp: "{{ item }}"
+  with_items:
+    - "export EC2_INI_PATH={{ install_dir }}/ec2.ini"
+    - "export ANSIBLE_INVENTORY={{ install_dir }}/ec2.py"
+    - "export AWS_PROFILE=terraform"
+    - "export ANSIBLE_REMOTE_USER=centos"
+    - "export ANSIBLE_HOST_KEY_CHECKING=False"
+    - "export ANSIBLE_DIFF_ALWAYS=True"
+    - "export BOTO_USE_ENDPOINT_HEURISTICS=True"
